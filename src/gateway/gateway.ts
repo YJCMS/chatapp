@@ -9,7 +9,7 @@ import { OnModuleInit } from '@nestjs/common';
 
 // WebSocketGateway 데코레이터를 사용하여 게이트웨이를 생성
 @WebSocketGateway()
-export class MyGateway implements OnModuleInit {
+export class MyGatewayV1 implements OnModuleInit {
   @WebSocketServer()
   server: Server;
 

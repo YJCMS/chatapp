@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MyGateway } from './gateway';
+import { AuctionGateway } from './gateway3';
 
 @Module({
-  providers: [MyGateway],
+  providers: [AuctionGateway],
 })
 export class GatewayModule {}
