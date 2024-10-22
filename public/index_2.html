@@ -6,6 +6,7 @@
   <title>Auction</title>
   <!-- jQuery 라이브러리 -->
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- 소켓 클라이언트 라이브러리 -->
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
@@ -25,11 +26,20 @@
 <form id="bidForm">
   <input type="number" id="bidAmount" placeholder="Enter your bid" required />
   <button type="submit">Place Bid</button>
+  <br>
+  <button type="button" id="leaveAuction">Leave Auction</button>
+  <br>
+  <button type="button" id="rejoinAuction">Rejoin Auction</button>
 </form>
 
 <script>
-  const socket = io('/auction');
-  const auctionId = 'auction123'; // 예시로 경매 ID 설정
+  // namespace를 통해서 채널 지정, 채널을 네임스페이스로 지정하면 되나?
+  // 다른 호스트 연결할 때는 주소 명시해야함
+  // namespace를 입력받아서 참여, gateway4에서는 chat만 구현
+  const namespace = prompt('Enter the namespace');
+  const socket = io(`/${namespace}`);
+  const auctionId = 'auction1'; // 예시로 경매 ID 설정
+  const nickname = prompt('Enter your nickname');
 
   document.getElementById('auctionId').textContent = auctionId;
 
@@ -59,10 +69,24 @@
     alert(message);
   });
 
+  // 경매방 나가기
+  const leaveButton = document.getElementById('leaveAuction');
+  leaveButton.addEventListener('click', () => {
+    socket.emit('leave_auction', auctionId);
+    $('#chat').append(`<div>경매방을 나갔습니다</div>`);
+  });
+
+  // 경매방 재참여
+  const rejoinButton = document.getElementById('rejoinAuction');
+  rejoinButton.addEventListener('click', () => {
+    socket.emit('join_auction', auctionId);
+    $('#chat').append(`<div>경매방을 참여 했습니다</div>`);
+  });
+
   // 메세지 전송
   function sendMessage() {
     const message = $('#message').val();
-    socket.emit('message', message);
+    socket.emit('message', {message, nickname} );
   }
 
   // 메세지 수신
