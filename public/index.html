@@ -10,7 +10,14 @@
 </head>
 <body>
 <h1>Auction</h1>
-<div id="auctionInfo">
+
+<!-- 옥션 아이디 입력 폼 -->
+<form id="auctionIdForm">
+  <input type="text" id="auctionIdInput" placeholder="Enter Auction ID" required />
+  <button type="submit">Join Auction</button>
+</form>
+
+<div id="auctionInfo" style="display: none;">
   <h2>Auction ID: <span id="auctionId"></span></h2>
   <h2>Current Highest Bid: $<span id="currentBid"></span></h2>
 </div>
@@ -22,53 +29,65 @@
   <button type="button" onclick="sendMessage()">Send</button>
 </form>
 
-<form id="bidForm">
+<form id="bidForm" style="display: none;">
   <input type="number" id="bidAmount" placeholder="Enter your bid" required />
   <button type="submit">Place Bid</button>
 </form>
 
 <script>
-  const socket = io('/auction');
-  const auctionId = 'auction123'; // 예시로 경매 ID 설정
+  let socket;
 
-  document.getElementById('auctionId').textContent = auctionId;
-
-  // 경매방 참여
-  socket.emit('join_auction', auctionId);
-
-  // 서버에서 현재 최고가를 받아와 표시
-  socket.on('current_bid', (currentBid) => {
-    document.getElementById('currentBid').textContent = currentBid;
-  });
-
-  // 입찰 성공 시, 새로운 최고가를 화면에 표시
-  socket.on('bid_updated', (newBid) => {
-    document.getElementById('currentBid').textContent = newBid;
-  });
-
-  // 입찰 폼 처리
-  const bidForm = document.getElementById('bidForm');
-  bidForm.addEventListener('submit', (e) => {
+  // 옥션 아이디 폼 처리
+  const auctionIdForm = document.getElementById('auctionIdForm');
+  auctionIdForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const bidAmount = parseInt(document.getElementById('bidAmount').value);
-    socket.emit('new_bid', { auctionId, bidAmount });
+    const auctionId = document.getElementById('auctionIdInput').value;
+    joinAuction(auctionId);
   });
 
-  // 입찰 에러 처리
-  socket.on('bid_error', (message) => {
-    alert(message);
-  });
+  function joinAuction(auctionId) {
+    socket = io('/auction-execute');
+    document.getElementById('auctionId').textContent = auctionId;
+    document.getElementById('auctionInfo').style.display = 'block';
+    document.getElementById('bidForm').style.display = 'block';
 
-  // 메세지 전송
-  function sendMessage() {
-    const message = $('#message').val();
-    socket.emit('message', message);
+    // 경매방 참여
+    socket.emit('join_auction', auctionId);
+
+    // 서버에서 현재 최고가를 받아와 표시
+    socket.on('current_bid', (currentBid) => {
+      document.getElementById('currentBid').textContent = currentBid;
+    });
+
+    // 입찰 성공 시, 새로운 최고가를 화면에 표시
+    socket.on('bid_updated', (newBid) => {
+      document.getElementById('currentBid').textContent = newBid;
+    });
+
+    // 입찰 폼 처리
+    const bidForm = document.getElementById('bidForm');
+    bidForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newCurrentBid = parseInt(document.getElementById('bidAmount').value);
+      socket.emit('new_bid', { auctionId, newCurrentBid });
+    });
+
+    // 입찰 에러 처리
+    socket.on('bid_error', (message) => {
+      alert(message);
+    });
+
+    // 메세지 전송
+    function sendMessage() {
+      const message = $('#message').val();
+      socket.emit('message', message);
+    }
+
+    // 메세지 수신
+    socket.on('message', (message) => {
+      $('#chat').append(`<div>${message}</div>`);
+    });
   }
-
-  // 메세지 수신
-  socket.on('message', (message) => {
-    $('#chat').append(`<div>${message}</div>`);
-  });
 </script>
 </body>
 </html>
