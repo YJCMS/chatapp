@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuctionGateway } from './gateway5';
+import { AuctionGateway } from './gateway7_voice';
 
 @Module({
   providers: [AuctionGateway],

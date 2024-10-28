@@ -76,4 +76,15 @@ export class AuctionGateway {
       );
     }
   }
+
+  // 경매방에 메시지를 전송
+  @SubscribeMessage('message')
+  handleMessage(
+    @MessageBody() data: { auctionId: string; message: string },
+    @ConnectedSocket() socket: Socket,
+  ): void {
+    const { auctionId, message } = data;
+    console.log(data);
+    this.server.to(auctionId).emit('message', message);
+  }
 }

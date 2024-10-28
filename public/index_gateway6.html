@@ -6,21 +6,6 @@
   <script src="https://code.jquery.com/jquery-3.6.1.slim.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <title>Auction</title>
-  <style>
-      #chat {
-          border: 1px solid #ccc;
-          height: 300px;
-          overflow-y: auto;
-          padding: 10px;
-      }
-      .chat-message {
-          margin-bottom: 5px;
-      }
-      #timer {
-          font-size: 20px;
-          margin: 10px 0;
-      }
-  </style>
 </head>
 <body>
 <h1>Auction</h1>
@@ -38,9 +23,7 @@
   <input type="number" id="bidAmount" placeholder="Enter your bid" required />
   <button type="submit">Place Bid</button>
 </form>
-<h1>Audio Recording with Socket.IO</h1>
-<button id="recordButton">Start Recording</button>
-<div id="timer">Recording Time: 0s</div>
+
 <script>
   const userId = prompt('Enter your nickname:');
   const auctionId =  prompt('Enter your auction ID:'); // 예시로 고정된 auctionId 사용
@@ -85,34 +68,6 @@
   // 입찰 에러 처리
   socket.on('bid_error', (message) => {
     alert(message);
-  });
-
-  // 녹음 시작 버튼 이벤트 리스너
-  document.getElementById('recordButton').addEventListener('click', startRecording);
-
-  // 녹음 시작 함수
-  function startRecording() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = event => {
-          // 녹음된 Blob 데이터를 서버로 전송
-          socket.emit('audio', event.data);
-        };
-        mediaRecorder.start();
-
-        // 일정 시간이 지나면 녹음을 중지
-        setTimeout(() => mediaRecorder.stop(), 5000); // 5초 녹음 예시
-      })
-      .catch(error => console.error('녹음 권한 필요:', error));
-  }
-
-  // 서버에서 음성 데이터를 수신하여 재생
-  socket.on('audioPlay', audioData => {
-    const audioBlob = new Blob([audioData], { type: 'audio/webm' });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    audio.play();
   });
 
 </script>
