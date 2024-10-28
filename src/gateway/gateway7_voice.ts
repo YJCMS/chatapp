@@ -82,9 +82,13 @@ export class AuctionGateway {
   }
 
   @SubscribeMessage('audio')
-  handleAudio(@MessageBody() data: Buffer) {
+  handleAudio(@MessageBody() voiceData) {
     // 모든 클라이언트에 음성 데이터를 브로드캐스팅
-    this.server.emit('audioPlay', data);
+    const { data, auctionId, userId } = voiceData;
+    this.server.to(auctionId).emit('audioPlay', data);
+    this.server
+      .to(auctionId)
+      .emit('message', `${userId}님이 음성메세지를 보냈습니다.`);
   }
 
   /**

@@ -90,7 +90,12 @@
   });
 
   /**
-   * 아래 코드들은 음성 녹음 기능
+   * 보이스 채팅 보내기 위한 코드
+   *
+   * 버튼을 누르고 았는동안 녹음됨
+   * 버튼에서 클릭을 뗄 때 녹음 중지
+   *
+   * 한번에 1인만 가능
    */
   const timer = document.getElementById('timer');
   const recordButton = document.getElementById('recordButton');
@@ -111,13 +116,9 @@
         mediaStream = stream; // 스트림을 전역 변수에 할당
         mediaRecorder = new MediaRecorder(stream);
 
-        // 녹음된 데이터 재생
         mediaRecorder.ondataavailable = event => {
-          const audioBlob = new Blob([event.data], { type: 'audio/webm' });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          $('#chat').append(`<div>${userId}님이 음성메세지를 보냈습니다.</div>`);
-          setTimeout(() => audio.play(), 500); // 녹음된 오디오 0.5초 후 자동 재생
+          // 녹음된 Blob 데이터를 서버로 전송
+          socket.emit('audio', { data: event.data, auctionId, userId });
         };
 
         // 녹음 중 버튼 색상 변경 및 타이머 초기화
@@ -143,8 +144,20 @@
 
       // 스트림 중지
       mediaStream.getTracks().forEach(track => track.stop());
+
+      // 오디오 URL 해제, 메모리 사용량 줄이기 위해서 한번 보낸 음성 파일은 삭제
+      const audioUrl = URL.createObjectURL(new Blob([event.data], { type: 'audio/webm' }));
+      URL.revokeObjectURL(audioUrl); // 메모리에서 URL 삭제
     }
   }
+
+  // 서버에서 음성 데이터를 수신하여 재생
+  socket.on('audioPlay', audioData => {
+    const audioBlob = new Blob([audioData], { type: 'audio/webm' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.play();
+  });
 
 </script>
 </body>
