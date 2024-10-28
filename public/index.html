@@ -97,6 +97,7 @@
   let mediaRecorder;
   let recordingInterval;
   let seconds = 0;
+  let mediaStream;
 
   // 버튼을 누르고 있는 동안 녹음 시작
   recordButton.addEventListener('mousedown', startRecording);
@@ -107,6 +108,7 @@
   function startRecording() {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
+        mediaStream = stream; // 스트림을 전역 변수에 할당
         mediaRecorder = new MediaRecorder(stream);
 
         // 녹음된 데이터 재생
@@ -138,6 +140,9 @@
       clearInterval(recordingInterval); // 타이머 중지
       timer.innerText = `Recording Stopped at ${seconds}s`;
       recordButton.classList.remove('recording'); // 버튼 색상 복원
+
+      // 스트림 중지
+      mediaStream.getTracks().forEach(track => track.stop());
     }
   }
 
