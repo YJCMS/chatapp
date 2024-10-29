@@ -156,9 +156,27 @@
   // 서버에서 음성 데이터를 수신하여 재생
   socket.on('audioPlay', audioData => {
     const audioBlob = new Blob([audioData], { type: 'audio/webm' });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    audio.play();
+
+    audioBlob.arrayBuffer().then(buffer => {
+      const audioContext = new AudioContext();
+
+      audioContext.decodeAudioData(buffer, decodedData => {
+        const source = audioContext.createBufferSource();
+        source.buffer = decodedData;
+
+        // 피치를 높이기 위해 재생 속도를 빠르게 설정
+        source.playbackRate.value = 1.2; // 1.5~2.0 정도로 설정하면 헬륨 효과 비슷함
+
+        // 고주파수 필터 적용 (목소리를 더 밝고 가볍게)
+        const highPassFilter = audioContext.createBiquadFilter();
+        highPassFilter.type = "highpass";
+        highPassFilter.frequency.value = 1000; // 주파수를 높게 설정해 목소리를 밝게 만듦
+
+        // 노드를 연결하여 소리 변조 및 재생
+        source.connect(highPassFilter).connect(audioContext.destination);
+        source.start();
+      });
+    });
   });
 
 </script>
