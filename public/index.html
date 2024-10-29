@@ -110,6 +110,7 @@
   recordButton.addEventListener('mouseup', stopRecording);
   recordButton.addEventListener('mouseleave', stopRecording); // 버튼을 벗어났을 때도 녹음 중지
 
+  // 녹음 후 소켓 요청 서버 전송, 그리고 버튼 반응
   function startRecording() {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
@@ -135,6 +136,7 @@
       .catch(error => console.error('녹음 권한 필요:', error));
   }
 
+  // 녹음 중지 및 메모리 할당 해제
   function stopRecording() {
     if (mediaRecorder && mediaRecorder.state === "recording") {
       mediaRecorder.stop(); // 녹음 중지

@@ -82,7 +82,9 @@ export class AuctionGateway {
   }
 
   @SubscribeMessage('audio')
-  handleAudio(@MessageBody() voiceData) {
+  handleAudio(
+    @MessageBody() voiceData: { data: Blob; auctionId: string; userId: string },
+  ) {
     // 모든 클라이언트에 음성 데이터를 브로드캐스팅
     const { data, auctionId, userId } = voiceData;
     this.server.to(auctionId).emit('audioPlay', data);
